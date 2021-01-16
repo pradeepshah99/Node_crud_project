@@ -32,7 +32,7 @@ db.once('open', (req, res)=>
 
 });
 
-var controller = require('./userCtrl');
+var controller = require('./controller/userCtrl');
 app.use('/api/user', controller);
 
 
