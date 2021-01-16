@@ -1,6 +1,10 @@
 var express = require('express');
 var router = express.Router();
 var database = require('../model/userSchema');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const auth = require('../auth/auth')
+
 
 
 router.post('/create', async(req, res)=>
@@ -8,11 +12,12 @@ router.post('/create', async(req, res)=>
     const checkEmail = await database.findOne({email: req.body.email});
     if(checkEmail)
     {
-        res.status(401).json({message : "No Such Email is found there"});
+        res.status(401).json({message : "Account Already Exist"});
     }
     else
     {
         let data = database();
+        const regex = 
         data.fullname = req.body.fullname;
         data.email = req.body.email;
         data.password = req.body.password;
@@ -27,25 +32,73 @@ router.post('/create', async(req, res)=>
         }
         else
         {
-            data.save().then((err, result)=>
-            {
-                if(err)
-                {
-                    res.status(501).json({message: "Something Wrong"});
-                }
-                else{
-                    res.status(200).json({message: "data added", data: result});
+            data.save().then((err, result) => {
+                if(err) {
+                    res.json(err);
+                } else {
+                    res.status(200).json({message: "Data saved successfully", Result : result});
                 }
             });
         }
     }
 });
 
-router.post('/login', async(req, res)=>
-{
-    const checkmail = await database.findOne({email : req.body.email});
-})
+router.post("/login", async (req, res) => { 
+   
+    const { email, password } = req.body;
+        try {
+          let user = await database.findOne({
+            email
+          });
+          if (!user)
+            return res.status(400).json({
+              message: "User Not Exist"
+            });
+    
+          const isMatch = await bcrypt.compare(password, user.password);
+          if (!isMatch)
+            return res.status(400).json({
+              message: "Incorrect Password !"
+            });
+    
+          const payload = {
+            user: {
+              id: user.id
+            }
+          };
+    
+           const token = jwt.sign(
+            payload,
+            "deep",
+            {
+              expiresIn: "1h"
+            },
+            (err, token) => {
+              if (err) throw err;
+              res.status(200).json({Generated_Token:
+                token
+              });
+            }
+          );
+        } catch (e) {
+          console.error(e);
+          res.status(500).json({
+            message: "Server Error"
+          });
+        }
+      }
+    );
 
+      router.get('/profile', auth, async(req,res)=>
+      {
+        try {
+            // request.user is getting fetched from Middleware after token authentication
+            const user = await database.findById(req.user.id);
+            res.json({message:`User has been fetched of id ${req.user.id}`, data: user});
+          } catch (e) {
+            res.send({ message: "Error in Fetching user" });
+          }
+      })
 
 
 
