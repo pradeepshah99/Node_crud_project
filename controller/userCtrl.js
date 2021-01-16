@@ -125,6 +125,29 @@ router.post("/login", async (req, res) => {
       });
 
 
+      router.delete('/delete', auth, async(req, res)=>
+      {
+          await database.findByIdAndDelete(req.user.id).then((err, user)=>
+          {
+              if(err) throw err;
+              else{
+                  res.status(200).json({message : "User with" + req.user.id + "has been deleted", data: user}), {Deleted_user : user};
+              }
+          }).catch(err => {
+            if(err.kind === 'ObjectId') {
+                return res.status(404).send({
+                    message: "Note not found with id " + req.user.id
+                });                
+            }
+            else{
+                return res.status(500).send({
+                    message: "Error updating note with id " + req.user.id
+                });
+            }
+            
+        });
+      })
+
 
 
 
