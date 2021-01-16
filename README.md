@@ -1,5 +1,5 @@
 # Node_crud_project
-Admin and User API - Using Node &amp; Express and other stuffs
+User CRUD API - Using Node &amp; Express and other stuffs
 
 To run this project - start with 'npm init'
 
