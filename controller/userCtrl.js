@@ -36,12 +36,15 @@ router.post('/create', async(req, res)=>
                 else{
                     res.status(200).json({message: "data added", data: result});
                 }
-            })
+            });
         }
     }
+});
+
+router.post('/login', async(req, res)=>
+{
+    const checkmail = await database.findOne({email : req.body.email});
 })
-
-
 
 
 
