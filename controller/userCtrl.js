@@ -98,7 +98,31 @@ router.post("/login", async (req, res) => {
           } catch (e) {
             res.send({ message: "Error in Fetching user" });
           }
-      })
+      });
+
+      router.put('/update', auth, async (req, res)=>
+      {
+          let salt = 10;
+          let hasedPassword = bcrypt.hashSync(req.body.password, salt);
+
+          await database.findByIdAndUpdate(req.user.id, {fullname:req.body.fullname, password:hasedPassword, mobile:req.body.mobile, city:req.body.city, state: req.body.state, country: req.body.country}, {new:true}).then(user=>
+            {
+                if(!user)
+                {
+                    return res.status(404).send({message : "User not found with this ID" + req.user.id})
+                }
+                res.json(user);
+            }).catch(err => {
+                if(err.kind === 'ObjectId') {
+                    return res.status(404).send({
+                        message: "User not found with this ID " + req.user.id
+                    });                
+                }
+                return res.status(500).send({
+                    message: "Error updating user with id " + req.user.id
+                });
+            })
+      });
 
 
 
